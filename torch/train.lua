@@ -93,12 +93,22 @@ function train_batch(dataset)
             inputs[{i-t+1,{}}]  = sample[1]:cuda()
             targets[{i-t+1,{}}] = sample[2]:cuda()
         end
+        local masks
+        if opt.use_mask then
+            masks = inputs[{{},{2},{},{},{}}]:clone()
+            masks[masks:eq(1)] = 0 --mask out known
+            masks[masks:eq(-1)] = 1
+        end
         -- closure to evaluate f(X) and df/dX
         local feval = function(x)
             if x ~= parameters then parameters:copy(x) end
             gradParameters:zero()
             --estimate f
             local output = model:forward(inputs)
+            if opt.use_mask then
+			    output:cmul(masks)
+                targets:cmul(masks)
+            end
             local f = criterion:forward(output, targets)
             --estimate df/dW
             local df_do = criterion:backward(output, targets)
@@ -147,8 +157,18 @@ function test_batch(dataset)
             inputs[{i-t+1,{}}]  = sample[1]:cuda()
             targets[{i-t+1,{}}] = sample[2]:cuda()
         end
+        local masks
+        if opt.use_mask then
+            masks = inputs[{{},{2},{},{},{}}]:clone()
+            masks[masks:eq(1)] = 0 --mask out known
+            masks[masks:eq(-1)] = 1
+        end
         -- test sample
         local pred = model:forward(inputs)
+        if opt.use_mask then
+		    pred:cmul(masks)
+            targets:cmul(masks)
+        end
         local err = criterion:forward(pred, targets)
         test_error = test_error + err
     end
