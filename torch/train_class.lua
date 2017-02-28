@@ -196,7 +196,6 @@ for i = 1, opt.max_epoch do
     if opt.decay_learning_rate > 0 and epoch % opt.decay_learning_rate == 0 then
             solver_params.learningRate = solver_params.learningRate / 2
             print('{epoch ' .. epoch .. '} reduce learning rate to ' .. solver_params.learningRate)
-        end
     end
 end
 errLogger:style{['% train error']    = '-', ['% test error']    = '-'}
