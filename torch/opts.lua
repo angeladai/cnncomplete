@@ -22,7 +22,7 @@ function M.parse(arg)
     cmd:option('-max_epochs',    150,     '#epochs to run')
     cmd:option('-batch_size',    64,      'mini-batch size')
     cmd:option('-start_epoch',   1,       'manual epoch number (for restarts)')
-    cmd:option('-max_jitter',    0,       'amount to translationally jitter, no data dup (0 for none)')
+    cmd:option('-max_jitter',    2,       'amount to translationally jitter, no data dup (0 for none)')
     -------------------- Optimization options --------------------
     cmd:option('-learning_rate', 0.001,   'learning rate')
     cmd:option('-decay_learning_rate', 50,'decay learning rate by half every n epochs')
