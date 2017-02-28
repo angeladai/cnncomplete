@@ -38,7 +38,7 @@ criterion = criterion:cuda()
 collectgarbage()
 
 -- log results to files
-errLogger = optim.Logger(opt.save .. 'error.log')
+errLogger = optim.Logger(paths.concat(opt.save, 'error.log'))
 
 parameters,gradParameters = model:getParameters()
 
@@ -61,7 +61,7 @@ function train(data_files)
     if math.fmod(epoch + 1, opt.save_interval) == 0 then
         print('[ epoch ' .. epoch .. ', batchsize ' .. opt.batch_size .. ' ] train error = ' .. train_error)
         collectgarbage()
-        local model_file = opt.save .. 'model_' .. epoch .. '.net'
+        local model_file = paths.concat(opt.save, 'model_' .. epoch .. '.net')
         model:clearState()
         torch.save(model_file, model) -- if gpu model, loads to gpu
     end
@@ -199,7 +199,7 @@ print('train err = ' .. train_error)
 print('test  err = ' .. test_error)
 
 
-local model_file = opt.save .. 'model.net'
+local model_file = paths.concat(opt.save, 'model.net')
 model:clearState()
 torch.save(model_file, model)
 print('saved model to ' .. model_file)

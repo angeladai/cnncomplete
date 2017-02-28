@@ -31,7 +31,7 @@ function M.parse(arg)
     cmd:option('-beta2',         0.999,   'second moment coefficient')
     cmd:option('-epsilon',       1e-8,    'for numerical stability')
     -------------------- Model options --------------------
-    cmd:option('-model',       'epn-class', 'model type')
+    cmd:option('-model',       'epn-unet-class', 'model type')
     cmd:option('-trained_class_model', 'models/classifier-partial.net', 'classification model')
     cmd:option('-retrain',     'none',      'provide path to model to retrain with')
 
@@ -47,7 +47,7 @@ function M.parse(arg)
     end
 
     -- save to log
-    cmd:log(opt.save .. 'log.txt', opt)
+    cmd:log(paths.concat(opt.save, 'log.txt'), opt)
     --cmd:silent()
     return opt
 end
