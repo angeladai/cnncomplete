@@ -47,7 +47,7 @@ function getData(readFilename, maxJitter, useLogTransform, truncation)
     );
     dataset.data = dataset.data:float()
     dataset.target = dataset.target:float()
-    dataset.data[{ {},1,{},{},{} }]:abs() end --abs(sdf)
+    dataset.data[{ {},1,{},{},{} }]:abs() --abs(sdf)
     if truncation then
         dataset.data[{ {},1,{},{},{} }][dataset.data[{ {},1,{},{},{} }]:gt(truncation)] = truncation
         dataset.target[{ {},{},{},{},{} }][dataset.target[{ {},{},{},{},{} }]:gt(truncation)] = truncation

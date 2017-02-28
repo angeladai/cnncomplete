@@ -29,7 +29,7 @@ solver_params = {
 -- load data
 local train_files = getLinesFromFile(opt.train_data)
 local test_files  = getLinesFromFile(opt.test_data)
-print('#train files = ' .. #trainFiles .. ', #test files = ' .. #testFiles)
+print('#train files = ' .. #train_files .. ', #test files = ' .. #test_files)
 
 -- create model/criterion
 paths.dofile(paths.concat('./models', opt.model .. '.lua'))
@@ -54,7 +54,7 @@ function train(data_files)
     local train_error = 0
     for f = 1, #data_files do
         local idx = train_file_indices[f]
-        assert(file_exists(data_files[idx]))
+        assert(paths.filep(data_files[idx]))
         local dataset = loadDataBatch(data_files[idx], opt.max_jitter, opt.use_log_transform, opt.truncation)
         local err = train_batch(dataset)
         train_error = train_error + err
@@ -89,19 +89,23 @@ function train_batch(dataset)
         -- create mini-batch
         local curBatchSize = math.min(opt.batch_size, dataset:size() - t + 1)
         if curBatchSize < opt.batch_size then break end -- make all batches same size
-        local inputs = torch.Tensor(curBatchSize, numInputChannels, gridDim, gridDim, gridDim):cuda()
-        local targets = torch.Tensor(curBatchSize, numTargetChannels, gridDim, gridDim, gridDim):cuda()
+        local inputs = torch.FloatTensor(curBatchSize, numInputChannels, gridDim, gridDim, gridDim)
+        local targets = torch.FloatTensor(curBatchSize, numTargetChannels, gridDim, gridDim, gridDim)
         for i = t, t+curBatchSize-1  do
             -- load new sample
             local sample = dataset[shuffle[i]]
-            inputs[{i-t+1,{}}]  = sample[1]:cuda()
-            targets[{i-t+1,{}}] = sample[2]:cuda()
+            inputs[{i-t+1,{}}]  = sample[1]
+            targets[{i-t+1,{}}] = sample[2]
         end
-        local class_feats = classifier:forward(inputs)
-		--debugging
-		print(class_feats:size())
-		error()
-		--debugging
+        local inputs_occ = torch.FloatTensor(curBatchSize, numInputChannels, gridDim, gridDim, gridDim)
+        inputs_occ[{{},1,{},{},{}}] = torch.le(inputs[{{},1,{},{},{}}], 1):float() --already abs(sdf)
+        inputs_occ[{{},2,{},{},{}}] = torch.eq(inputs[{{},2,{},{},{}}], 1):float()
+
+        inputs = inputs:cuda()
+        targets = targets:cuda()
+        inputs_occ = inputs_occ:cuda()
+
+        local class_feats = classifier:forward(inputs_occ)
         local masks
         if opt.use_mask then
             masks = inputs[{{},{2},{},{},{}}]:clone()
@@ -115,7 +119,7 @@ function train_batch(dataset)
             --estimate f
             local output = model:forward({inputs,class_feats})
             if opt.use_mask then
-			    output:cmul(masks)
+                output:cmul(masks)
                 targets:cmul(masks)
             end
             local f = criterion:forward(output, targets)
@@ -158,15 +162,23 @@ function test_batch(dataset)
     for t = 1,dataset:size(),opt.batch_size do
         local curBatchSize = math.min(opt.batch_size, dataset:size() - t + 1)
         if curBatchSize < opt.batch_size then break end -- make all batches same size
-        local inputs = torch.Tensor(curBatchSize, numInputChannels, gridDim, gridDim, gridDim):cuda()
-        local targets = torch.Tensor(curBatchSize, numTargetChannels, gridDim, gridDim, gridDim):cuda()
+        local inputs = torch.FloatTensor(curBatchSize, numInputChannels, gridDim, gridDim, gridDim)
+        local targets = torch.FloatTensor(curBatchSize, numTargetChannels, gridDim, gridDim, gridDim)
         for i = t, t+curBatchSize-1  do
             -- load new sample
             local sample = dataset[i]
-            inputs[{i-t+1,{}}]  = sample[1]:cuda()
-            targets[{i-t+1,{}}] = sample[2]:cuda()
+            inputs[{i-t+1,{}}]  = sample[1]
+            targets[{i-t+1,{}}] = sample[2]
         end
-        local class_feats = classifier:forward(inputs)
+        local inputs_occ = torch.FloatTensor(curBatchSize, numInputChannels, gridDim, gridDim, gridDim)
+        inputs_occ[{{},1,{},{},{}}] = torch.le(inputs[{{},1,{},{},{}}], 1):float() --already abs(sdf)
+        inputs_occ[{{},2,{},{},{}}] = torch.eq(inputs[{{},2,{},{},{}}], 1):float()
+
+        inputs = inputs:cuda()
+        targets = targets:cuda()
+        inputs_occ = inputs_occ:cuda()
+
+        local class_feats = classifier:forward(inputs_occ)
         local masks
         if opt.use_mask then
             masks = inputs[{{},{2},{},{},{}}]:clone()

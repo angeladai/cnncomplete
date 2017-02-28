@@ -19,7 +19,7 @@ function M.parse(arg)
     cmd:option('-save_interval', 20,      'interval to save current state of model')
     cmd:option('-manual_seed',   1,       'manual seed')
     -------------------- Training options --------------------
-    cmd:option('-max_epochs',    150,     '#epochs to run')
+    cmd:option('-max_epoch',    150,     '#epochs to run')
     cmd:option('-batch_size',    64,      'mini-batch size')
     cmd:option('-start_epoch',   1,       'manual epoch number (for restarts)')
     cmd:option('-max_jitter',    2,       'amount to translationally jitter, no data dup (0 for none)')
@@ -37,7 +37,7 @@ function M.parse(arg)
 
 
     local opt = cmd:parse(arg or {})
-    if directory_exists(opt.save) == false then
+    if paths.dirp(opt.save) == false then
         print('creating log folder: ' .. opt.save)
         os.execute("mkdir " .. opt.save)
     else
@@ -48,7 +48,7 @@ function M.parse(arg)
 
     -- save to log
     cmd:log(opt.save .. 'log.txt', opt)
-    cmd:silent()
+    --cmd:silent()
     return opt
 end
 

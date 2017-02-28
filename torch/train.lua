@@ -27,7 +27,7 @@ solver_params = {
 -- load data
 local train_files = getLinesFromFile(opt.train_data)
 local test_files  = getLinesFromFile(opt.test_data)
-print('#train files = ' .. #trainFiles .. ', #test files = ' .. #testFiles)
+print('#train files = ' .. #train_files .. ', #test files = ' .. #test_files)
 
 -- create model/criterion
 paths.dofile(paths.concat('./models', opt.model .. '.lua'))
@@ -50,7 +50,7 @@ function train(data_files)
     local train_error = 0
     for f = 1, #data_files do
         local idx = train_file_indices[f]
-        assert(file_exists(data_files[idx]))
+        assert(paths.filep(data_files[idx]))
         local dataset = loadDataBatch(data_files[idx], opt.max_jitter, opt.use_log_transform, opt.truncation)
         local err = train_batch(dataset)
         train_error = train_error + err
