@@ -1,0 +1,79 @@
+
+-- from model-orig, add more to fc and make another deconv layer
+
+require 'nn'
+require 'cunn'
+require 'cudnn'
+require 'optim'
+
+-- create model
+if (opt.retrain == 'none') then
+    model = nn.Sequential()                                                    -- input {2 x 32^3, 1 x 40} (sdf, class prediction vector)
+    
+    local encoder = nn.ParallelTable()
+    -- conv part
+    local enc_conv = nn.Sequential()
+    enc_conv:add(cudnn.VolumetricConvolution(2, 32, 6, 6, 6, 2, 2, 2, 0, 0, 0))   -- output 32 x 14^3
+    enc_conv:add(cudnn.VolumetricBatchNormalization(32))
+    enc_conv:add(cudnn.ReLU())
+    enc_conv:add(cudnn.VolumetricConvolution(32, 32, 3, 3, 3, 1, 1, 1, 0, 0, 0))  -- output 32 x 12^3
+    enc_conv:add(cudnn.VolumetricBatchNormalization(32))
+    enc_conv:add(cudnn.ReLU())
+    enc_conv:add(cudnn.VolumetricConvolution(32, 32, 4, 4, 4, 2, 2, 2, 1, 1, 1))  -- output 32 x 6^3
+    enc_conv:add(cudnn.VolumetricBatchNormalization(32))
+    --enc_conv:add(nn.VolumetricMaxPooling(2, 2, 2))
+    enc_conv:add(nn.Reshape(6912))
+
+    encoder:add(enc_conv)       -- 3d convolutions for input sdf
+    encoder:add(nn.Identity())  -- pass thru class prediction vector
+    model:add(encoder)
+    model:add(nn.JoinTable(2)) 
+
+    model:add(nn.Linear(6912+55, 512))    -- fully connected layer
+    --model:add(nn.BatchNormalization(512))
+    model:add(cudnn.ReLU())
+
+    --model:add(nn.Linear(512, 512))    -- fully connected layer
+    --model:add(nn.BatchNormalization(512))
+    --model:add(cudnn.ReLU())
+
+    model:add(nn.Linear(512, 2048))
+    --model:add(nn.BatchNormalization(2048))
+    model:add(cudnn.ReLU())
+    -- reshape
+    model:add(nn.Reshape(32, 4, 4, 4))  -- 2048 = 32*(4^3) 
+    -- upconv part
+    model:add(nn.VolumetricFullConvolution(32, 16, 4, 4, 4, 2, 2, 2, 1, 1, 1)) -- output 16 x 8^3
+    model:add(cudnn.VolumetricBatchNormalization(16))
+    model:add(cudnn.ReLU())
+    model:add(nn.VolumetricFullConvolution(16, 8, 4, 4, 4, 2, 2, 2, 1, 1, 1))  -- output 8 x 16^3
+    model:add(cudnn.VolumetricBatchNormalization(8))
+    model:add(cudnn.ReLU())
+    model:add(nn.VolumetricFullConvolution(8, 4, 4, 4, 4, 2, 2, 2, 1, 1, 1))   -- output 4 x 32^3
+    model:add(cudnn.VolumetricBatchNormalization(4))
+    model:add(cudnn.ReLU())
+    model:add(nn.VolumetricFullConvolution(4, 1, 5, 5, 5, 1, 1, 1, 2, 2, 2))   -- output 1 x 32^3
+
+    -- re-weight to log space
+    model:add(nn.Abs())
+    local addLayer = nn.Add(1, true) --always add 1 (since going to take ln)
+    addLayer.bias = torch.ones(1)
+    addLayer.accGradParameters = function() return end --fix the weights
+    model:add(addLayer)
+    model:add(nn.Log())
+else --preload network
+    assert(paths.filep(opt.retrain), 'File not found: ' .. opt.retrain)
+    print('loading previously trained network: ' .. opt.retrain)
+    model = torch.load(opt.retrain)
+end
+cudnn.convert(model, cudnn)
+print('model:')
+print(model)
+
+-- create criterion
+--criterion = nn.MSECriterion()
+criterion = nn.SmoothL1Criterion()
+print('criterion:')
+print(criterion)
+
+
