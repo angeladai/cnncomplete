@@ -18,7 +18,6 @@ if (opt.retrain == 'none') then
     model:add(cudnn.ReLU())
     model:add(cudnn.VolumetricConvolution(32, 32, 4, 4, 4, 2, 2, 2, 1, 1, 1))  -- output 32 x 6^3
     model:add(cudnn.VolumetricBatchNormalization(32))
-    --model:add(nn.VolumetricMaxPooling(2, 2, 2))
     model:add(nn.Reshape(6912))
 
     model:add(nn.Linear(6912, 512))    -- fully connected layer
@@ -42,12 +41,14 @@ if (opt.retrain == 'none') then
     model:add(nn.VolumetricFullConvolution(4, 1, 5, 5, 5, 1, 1, 1, 2, 2, 2))   -- output 1 x 32^3
 
     -- re-weight to log space
-    model:add(nn.Abs())
-    local addLayer = nn.Add(1, true) --always add 1 (since going to take ln)
-    addLayer.bias = torch.ones(1)
-    addLayer.accGradParameters = function() return end --fix the weights
-    model:add(addLayer)
-    model:add(nn.Log())
+    if opt.use_log_transform then
+        model:add(nn.Abs())
+        local addLayer = nn.Add(1, true) --always add 1 (since going to take ln)
+        addLayer.bias = torch.ones(1)
+        addLayer.accGradParameters = function() return end --fix the weights
+        model:add(addLayer)
+        model:add(nn.Log())
+    end
 else --preload network
     assert(paths.filep(opt.retrain), 'File not found: ' .. opt.retrain)
     print('loading previously trained network: ' .. opt.retrain)
@@ -58,7 +59,6 @@ print('model:')
 print(model)
 
 -- create criterion
---criterion = nn.MSECriterion()
 criterion = nn.SmoothL1Criterion()
 print('criterion:')
 print(criterion)

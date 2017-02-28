@@ -14,7 +14,7 @@ function M.parse(arg)
     cmd:option('-test_data',     'test_shape_voxel_data_list.txt', 'txt list of h5 test files')
     cmd:option('-truncation',    3,       'sdf truncation value (in voxels)')
     cmd:option('-use_log_transform', true, 'log transform sdf values')
-    cmd:option('-use_mask',          true, 'mask out known values')
+    cmd:option('-use_mask',          false,'mask out known values')
     cmd:option('-gpu_index',     0,       'default gpu')
     cmd:option('-save_interval', 20,      'interval to save current state of model')
     cmd:option('-manual_seed',   1,       'manual seed')
@@ -32,6 +32,7 @@ function M.parse(arg)
     cmd:option('-epsilon',       1e-8,    'for numerical stability')
     -------------------- Model options --------------------
     cmd:option('-model',       'epn-class', 'model type')
+    cmd:option('-trained_class_model', 'models/classifier-partial.net', 'classification model')
     cmd:option('-retrain',     'none',      'provide path to model to retrain with')
 
 

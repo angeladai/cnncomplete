@@ -44,7 +44,9 @@ if (opt.retrain == 'none') then
     local decoded = nnutil.VolUpConvBlock({ activation='none', doBatchNorm=false })(2*nf, 1, 4, 2, 1, 0)(d4)
 
     -- re-weight to log space
-    decoded = nn.Log()(nn.AddConstant(1)(nn.Abs()(decoded)))
+    if opt.use_log_transform then
+        decoded = nn.Log()(nn.AddConstant(1)(nn.Abs()(decoded)))
+    end
 
     model = nn.gModule(input, {decoded})
 else --preload network
@@ -57,7 +59,6 @@ print('model:')
 print(model)
 
 -- create criterion
---criterion = nn.MSECriterion()
 criterion = nn.SmoothL1Criterion()
 print('criterion:')
 print(criterion)
