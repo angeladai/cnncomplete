@@ -48,7 +48,7 @@ function M.parse(arg)
 
     -- save to log
     cmd:log(paths.concat(opt.save, 'log.txt'), opt)
-    --cmd:silent()
+    cmd:silent()
     return opt
 end
 
