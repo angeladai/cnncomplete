@@ -2,12 +2,14 @@
 
 require 'hdf5'
 
-function jitter(src, tgt, jitter, truncation)
+function jitter(src, tgt, jitter, truncation, tgtTruncation)
     local jitterList = torch.Tensor(src:size()[1], 3)
     local dst = torch.Tensor(src:size()):fill(truncation)
     dst[{{},2,{},{},{}}]:fill(1)
     local tgtdst
-    if tgt then tgtdst = torch.Tensor(tgt:size()):fill(truncation) end
+    if tgt then 
+        tgtdst = torch.Tensor(tgt:size()):fill(tgtTruncation) 
+    end
     for idx = 1,src:size()[1] do
         local i = math.random(-jitter, jitter)
         local j = math.random(-jitter, jitter)
@@ -49,13 +51,16 @@ function getData(readFilename, maxJitter, useLogTransform, truncation)
     dataset.target = dataset.target:float()
     dataset.data[{ {},1,{},{},{} }]:abs() --abs(sdf)
     if truncation then
+        print('applying truncation of ' .. truncation)
         dataset.data[{ {},1,{},{},{} }][dataset.data[{ {},1,{},{},{} }]:gt(truncation)] = truncation
         dataset.target[{ {},{},{},{},{} }][dataset.target[{ {},{},{},{},{} }]:gt(truncation)] = truncation
     end
+    local tgtTrunc = truncation
     if useLogTransform then -- since we will take log of model output, need to make sure target is in log space too
+        print('applying log transform to target')
         dataset.target = torch.add(dataset.target, 1)
         dataset.target[{ {},{},{},{},{} }]:log()
-        truncation = torch.log(truncation + 1)
+        tgtTrunc = torch.log(truncation + 1)
     end
     local jitterList = torch.Tensor(dataset.data:size()[1], 3):fill(0)
     if maxJitter > 0 then
@@ -64,7 +69,7 @@ function getData(readFilename, maxJitter, useLogTransform, truncation)
             local beginidx = i
             local endidx = math.min(numSamples, i+1000)
             dataset.data[{ {beginidx, endidx}, {}, {}, {}, {} }], dataset.target[{ {beginidx, endidx}, {}, {}, {}, {} }], jitterList[{ {beginidx, endidx}, {} }] = 
-                jitter(dataset.data[{ {beginidx, endidx}, {}, {}, {}, {} }], dataset.target[{ {beginidx, endidx}, {}, {}, {}, {} }], maxJitter, truncation)
+                jitter(dataset.data[{ {beginidx, endidx}, {}, {}, {}, {} }], dataset.target[{ {beginidx, endidx}, {}, {}, {}, {} }], maxJitter, truncation, tgtTrunc)
         end
     end
     function dataset:size()
