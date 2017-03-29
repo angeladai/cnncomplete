@@ -51,13 +51,13 @@ function getData(readFilename, maxJitter, useLogTransform, truncation)
     dataset.target = dataset.target:float()
     dataset.data[{ {},1,{},{},{} }]:abs() --abs(sdf)
     if truncation then
-        print('applying truncation of ' .. truncation)
+        --print('applying truncation of ' .. truncation)
         dataset.data[{ {},1,{},{},{} }][dataset.data[{ {},1,{},{},{} }]:gt(truncation)] = truncation
         dataset.target[{ {},{},{},{},{} }][dataset.target[{ {},{},{},{},{} }]:gt(truncation)] = truncation
     end
     local tgtTrunc = truncation
     if useLogTransform then -- since we will take log of model output, need to make sure target is in log space too
-        print('applying log transform to target')
+        --print('applying log transform to target')
         dataset.target = torch.add(dataset.target, 1)
         dataset.target[{ {},{},{},{},{} }]:log()
         tgtTrunc = torch.log(truncation + 1)
