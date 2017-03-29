@@ -85,4 +85,33 @@ function loadDataBatch(filename, maxJitter, useLogTransform, truncation)
     return dataset
 end
 
+function getInputData(readFilename, maxJitter, useLogTransform, truncation)                                                                                 --print('loading dataset: ' .. readFilename)
+    local readFile = hdf5.open(readFilename, 'r');                                                                                                     local dataset = {                                                                                                                                      data = readFile:read('data'):all(),
+    }
+    readFile:close()
+    -- size/indexing
+    setmetatable(dataset,
+        {__index = function(t, i)
+                    return {t.data[i]}                                                                                                                end}
+    );
+    dataset.data = dataset.data:float()
+    dataset.data[{ {},1,{},{},{} }]:abs() --abs(sdf)
+    if truncation then                                                                                                                                     print('applying truncation of ' .. truncation)                                                                                                     dataset.data[{ {},1,{},{},{} }][dataset.data[{ {},1,{},{},{} }]:gt(truncation)] = truncation
+    end
+    local jitterList = torch.Tensor(dataset.data:size()[1], 3):fill(0)
+    if maxJitter > 0 then                                                                                                                                  local numSamples = dataset.data:size()[1]
+        for i = 1,numSamples,1000 do
+            local beginidx = i
+            local endidx = math.min(numSamples, i+1000)
+            local tmp
+            dataset.data[{ {beginidx, endidx}, {}, {}, {}, {} }], tmp, jitterList[{ {beginidx, endidx}, {} }] =
+                jitter(dataset.data[{ {beginidx, endidx}, {}, {}, {}, {} }], nil, maxJitter, truncation, nil)
+        end
+    end
+    function dataset:size()
+        return self.data:size(1)
+    end
+
+    return dataset, jitterList
+end
 
