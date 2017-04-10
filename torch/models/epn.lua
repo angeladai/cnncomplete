@@ -8,34 +8,21 @@ require 'optim'
 
 -- create model
 if (opt.retrain == 'none') then
-    model = nn.Sequential()                                                    -- input {2 x 32^3, 1 x 40} (sdf, class prediction vector)
-    
-    local encoder = nn.ParallelTable()
+    model = nn.Sequential()                                                    -- input 2 x 32^3
     -- conv part
-    local enc_conv = nn.Sequential()
-    enc_conv:add(cudnn.VolumetricConvolution(2, 32, 6, 6, 6, 2, 2, 2, 0, 0, 0))   -- output 32 x 14^3
-    enc_conv:add(cudnn.VolumetricBatchNormalization(32))
-    enc_conv:add(cudnn.ReLU())
-    enc_conv:add(cudnn.VolumetricConvolution(32, 32, 3, 3, 3, 1, 1, 1, 0, 0, 0))  -- output 32 x 12^3
-    enc_conv:add(cudnn.VolumetricBatchNormalization(32))
-    enc_conv:add(cudnn.ReLU())
-    enc_conv:add(cudnn.VolumetricConvolution(32, 32, 4, 4, 4, 2, 2, 2, 1, 1, 1))  -- output 32 x 6^3
-    enc_conv:add(cudnn.VolumetricBatchNormalization(32))
-    enc_conv:add(nn.View(6912))
+    model:add(cudnn.VolumetricConvolution(2, 32, 6, 6, 6, 2, 2, 2, 0, 0, 0))   -- output 32 x 14^3
+    model:add(cudnn.VolumetricBatchNormalization(32))
+    model:add(cudnn.ReLU())
+    model:add(cudnn.VolumetricConvolution(32, 32, 3, 3, 3, 1, 1, 1, 0, 0, 0))  -- output 32 x 12^3
+    model:add(cudnn.VolumetricBatchNormalization(32))
+    model:add(cudnn.ReLU())
+    model:add(cudnn.VolumetricConvolution(32, 32, 4, 4, 4, 2, 2, 2, 1, 1, 1))  -- output 32 x 6^3
+    model:add(cudnn.VolumetricBatchNormalization(32))
+    model:add(nn.View(6912))
 
-    encoder:add(enc_conv)       -- 3d convolutions for input sdf
-    encoder:add(nn.Identity())  -- pass thru class prediction vector
-    model:add(encoder)
-    model:add(nn.JoinTable(2)) 
-
-    model:add(nn.Linear(6912+55, 512))    -- fully connected layer
+    model:add(nn.Linear(6912, 512))    -- fully connected layer
     --model:add(nn.BatchNormalization(512))
     model:add(cudnn.ReLU())
-
-    --model:add(nn.Linear(512, 512))    -- fully connected layer
-    --model:add(nn.BatchNormalization(512))
-    --model:add(cudnn.ReLU())
-
     model:add(nn.Linear(512, 2048))
     --model:add(nn.BatchNormalization(2048))
     model:add(cudnn.ReLU())

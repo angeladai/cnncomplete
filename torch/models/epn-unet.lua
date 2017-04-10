@@ -26,10 +26,10 @@ if (opt.retrain == 'none') then
 
     --model = nn.gModule(input, {encoded})
     local bottleneck = nn.Sequential()
-    bottleneck:add(nn.Reshape(8*nf, true))
+    bottleneck:add(nn.View(8*nf))
     nnutil.FullyConnectedBlock({ doBatchNorm=false })(8*nf, 8*nf)(bottleneck)
     nnutil.FullyConnectedBlock({ doBatchNorm=false })(8*nf, 8*nf)(bottleneck)
-    bottleneck:add(nn.Reshape(8*nf, 1, 1, 1, true))
+    bottleneck:add(nn.View(8*nf, 1, 1, 1))
     local bottlenecked = bottleneck(encoded)
     --model = nn.gModule(input, {bottlenecked})
 

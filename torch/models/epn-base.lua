@@ -10,35 +10,35 @@ require 'optim'
 if (opt.retrain == 'none') then
     model = nn.Sequential()                                                    -- input 2 x 32^3
     -- conv part
-    model:add(cudnn.VolumetricConvolution(2, 32, 6, 6, 6, 2, 2, 2, 0, 0, 0))   -- output 32 x 14^3
-    model:add(cudnn.VolumetricBatchNormalization(32))
+    model:add(cudnn.VolumetricConvolution(2, 80, 4, 4, 4, 2, 2, 2, 1, 1, 1))  
+    model:add(cudnn.VolumetricBatchNormalization(80))
     model:add(cudnn.ReLU())
-    model:add(cudnn.VolumetricConvolution(32, 32, 3, 3, 3, 1, 1, 1, 0, 0, 0))  -- output 32 x 12^3
-    model:add(cudnn.VolumetricBatchNormalization(32))
+    model:add(cudnn.VolumetricConvolution(80, 160, 4, 4, 4, 2, 2, 2, 1, 1, 1))
+    model:add(cudnn.VolumetricBatchNormalization(160))
     model:add(cudnn.ReLU())
-    model:add(cudnn.VolumetricConvolution(32, 32, 4, 4, 4, 2, 2, 2, 1, 1, 1))  -- output 32 x 6^3
-    model:add(cudnn.VolumetricBatchNormalization(32))
-    model:add(nn.Reshape(6912))
+    model:add(cudnn.VolumetricConvolution(160, 320, 4, 4, 4, 2, 2, 2, 1, 1, 1))
+    model:add(cudnn.VolumetricBatchNormalization(320))
+    model:add(cudnn.ReLU())
+    model:add(cudnn.VolumetricConvolution(320, 640, 4, 4, 4, 1, 1, 1, 0, 0, 0))
+    model:add(cudnn.VolumetricBatchNormalization(640))
+    model:add(nn.View(640))
 
-    model:add(nn.Linear(6912, 512))    -- fully connected layer
-    --model:add(nn.BatchNormalization(512))
+    model:add(nn.Linear(640, 640))  
     model:add(cudnn.ReLU())
-    model:add(nn.Linear(512, 2048))
-    --model:add(nn.BatchNormalization(2048))
+    model:add(nn.Linear(640, 640))  
     model:add(cudnn.ReLU())
-    -- reshape
-    model:add(nn.Reshape(32, 4, 4, 4))  -- 2048 = 32*(4^3) 
+    model:add(nn.View(640, 1, 1, 1))
     -- upconv part
-    model:add(nn.VolumetricFullConvolution(32, 16, 4, 4, 4, 2, 2, 2, 1, 1, 1)) -- output 16 x 8^3
-    model:add(cudnn.VolumetricBatchNormalization(16))
+    model:add(nn.VolumetricFullConvolution(640, 320, 4, 4, 4, 1, 1, 1, 0, 0, 0))
+    model:add(cudnn.VolumetricBatchNormalization(320))
     model:add(cudnn.ReLU())
-    model:add(nn.VolumetricFullConvolution(16, 8, 4, 4, 4, 2, 2, 2, 1, 1, 1))  -- output 8 x 16^3
-    model:add(cudnn.VolumetricBatchNormalization(8))
+    model:add(nn.VolumetricFullConvolution(320, 160, 4, 4, 4, 2, 2, 2, 1, 1, 1))
+    model:add(cudnn.VolumetricBatchNormalization(160))
     model:add(cudnn.ReLU())
-    model:add(nn.VolumetricFullConvolution(8, 4, 4, 4, 4, 2, 2, 2, 1, 1, 1))   -- output 4 x 32^3
-    model:add(cudnn.VolumetricBatchNormalization(4))
+    model:add(nn.VolumetricFullConvolution(160, 80, 4, 4, 4, 2, 2, 2, 1, 1, 1))
+    model:add(cudnn.VolumetricBatchNormalization(80))
     model:add(cudnn.ReLU())
-    model:add(nn.VolumetricFullConvolution(4, 1, 5, 5, 5, 1, 1, 1, 2, 2, 2))   -- output 1 x 32^3
+    model:add(nn.VolumetricFullConvolution(80, 1, 4, 4, 4, 2, 2, 2, 1, 1, 1))  
 
     -- re-weight to log space
     if opt.use_log_transform then
