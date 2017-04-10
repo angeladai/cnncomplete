@@ -26,14 +26,14 @@ if (opt.retrain == 'none') then
     local enc3 = nnutil.VolConvBlock({ activation='LeakyReLU' })(2*nf, 4*nf, 4, 2, 1)(enc2)
     local enc4 = nnutil.VolConvBlock({ activation='LeakyReLU' })(4*nf, 8*nf, 4, 1, 0)(enc3)
     local enc = nn.Sequential()
-    enc:add(nn.View(8*nf, true))
+    enc:add(nn.View(8*nf))
     local encoded = enc(enc4)
 
     local joined = nn.JoinTable(2)({encoded, class})
     local bottleneck = nn.Sequential()
     nnutil.FullyConnectedBlock({ doBatchNorm=false })(8*nf + nf_class, 8*nf)(bottleneck)
     nnutil.FullyConnectedBlock({ doBatchNorm=false })(8*nf, 8*nf)(bottleneck)
-    bottleneck:add(nn.View(8*nf, 1, 1, 1, true))
+    bottleneck:add(nn.View(8*nf, 1, 1, 1))
     local bottlenecked = bottleneck(joined)
 
     --decoder
