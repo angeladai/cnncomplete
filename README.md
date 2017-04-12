@@ -17,6 +17,8 @@ Train/test data is availabe for download on our [project website](http://graphic
 ### Installation:  
 Training tasks use [Torch7](http://torch.ch/docs/getting-started.html), with torch packages `cudnn`, `cunn`, `hdf5`, `xlua`.
 
+The shape synthesis code was developed under VS2013. 
+
 ### Training:  
 * `th train_class.lua -model epn-unet-class -save logs-epn-unet-class -train_data data/h5_shapenet_dim32_sdf/train_shape_voxel_data_list.txt -test_data data/h5_shapenet_dim32_sdf/test_shape_voxel_data_list.txt -gpu_index 0`  
 
