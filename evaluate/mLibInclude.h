@@ -13,8 +13,6 @@
 //
 
 #include "mLibCore.h"
-#include "mLibDepthCamera.h"
-#include "mLibFreeImage.h"
 
 using namespace ml;
 

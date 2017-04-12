@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="DistanceFieldVis.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Evaluation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -16,14 +13,11 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\VirtualScan\VoxelGrid.cpp">
+    <ClCompile Include="VoxelGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DistanceFieldVis.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Evaluation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -33,7 +27,7 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\VirtualScan\VoxelGrid.h">
+    <ClInclude Include="VoxelGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

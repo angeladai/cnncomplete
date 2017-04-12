@@ -1,5 +1,5 @@
 #pragma once
-#include "../VirtualScan/VoxelGrid.h"
+#include "VoxelGrid.h"
 
 struct EvalStatsDist {
 	float l1sum;
@@ -26,4 +26,14 @@ public:
 
 private:
 
+	template<typename T>
+	static void loadDF(const std::string& filename, DistanceField3f& df);
 };
+
+template<typename T>
+void Evaluation::loadDF(const std::string& filename, DistanceField3f& df)
+{
+	BinaryDataStreamFile s(filename, BinaryDataBuffer::Mode::read_flag);
+	s >> df;
+	s.close();
+}

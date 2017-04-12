@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Evaluation.h"
-#include "DistanceFieldVis.h"
 
 void Evaluation::evaluate(const std::string& inputDir, const std::string& groundTruthDir, const std::string& completionDir, bool bNestedDirectories /*= true*/)
 {
@@ -12,28 +11,39 @@ void Evaluation::evaluate(const std::string& inputDir, const std::string& ground
 	//stats to compute
 	std::unordered_map<std::string, std::vector<EvalStatsDist>> statsDist;
 	Directory resultDir(completionDir);
-	const auto files = resultDir.getFilesWithSuffix(".df");
+	std::vector<std::string> files;
+	if (bNestedDirectories) {
+		const std::vector<std::string> classes = resultDir.getDirectories();
+		for (const std::string& classname : classes) {
+			std::vector<std::string> classfiles = Directory(resultDir.getPath() + classname).getFilesWithSuffix(".df");
+			for (std::string& c : classfiles) c = classname + "/" + c;
+			if (!classfiles.empty()) files.insert(files.end(), classfiles.begin(), classfiles.end());
+		}
+	}
+	else {
+		files = resultDir.getFilesWithSuffix(".df");
+	}
+
 	for (unsigned int i = 0; i < files.size(); i++) {
 		const auto parts = util::splitPath(files[i]);
 		const std::string modelTrajId = util::removeExtensions(parts.back());
 		const std::string modelId = util::splitOnFirst(modelTrajId, "__").first; //model id
-		const std::string classId = bNestedDirectories ? parts[parts.size() - 1] : "";
+		const std::string classId = bNestedDirectories ? parts[parts.size() - 2] : "";
 		
 		//load gt
 		const std::string gtFile = groundTruthDir + "/" + classId + "/" + modelId + "__0__.df";
-		if (!util::fileExists(gtfile)) throw MLIB_EXCEPTION("gt file (" + gtFile + ") does not exist!");
-		DistanceField3f gtDF; DistanceFieldVis::loadDF<UINT64>(gtFile, gtDF);
+		if (!util::fileExists(gtFile)) throw MLIB_EXCEPTION("gt file (" + gtFile + ") does not exist!");
+		DistanceField3f gtDF; loadDF<UINT64>(gtFile, gtDF);
 		//load input
 		const std::string inputFile = inputDir + "/" + classId + "/" + modelTrajId + ".sdf";
 		if (!util::fileExists(inputFile)) throw MLIB_EXCEPTION("input file (" + inputFile + ") does not exist!");
 		VoxelGrid inputSDF(vec3ul(0, 0, 0), mat4f::identity(), 0.0f, 0.0f, 0.0f);
-		inputSDF.loadFromFile(inputSdfFile); 
+		inputSDF.loadFromFile(inputFile); 
 		//load completion
-		const std::string& predFile = files[i];
+		const std::string& predFile = completionDir + "/" + files[i];
 		if (!util::fileExists(predFile)) throw MLIB_EXCEPTION("completion file (" + predFile + ") does not exist!");
 		//load completion
-		DistanceField3f predDF; DistanceFieldVis::loadDF<UINT64>(predFile, predDF);
-		//predDF.improveDF(4);
+		DistanceField3f predDF; loadDF<UINT64>(predFile, predDF);
 		const auto itDist = statsDist.find(classId);
 		if (itDist == statsDist.end()) statsDist[classId] = std::vector<EvalStatsDist>(1, evaluate(inputSDF, gtDF, predDF));
 		else itDist->second.push_back(evaluate(inputSDF, gtDF, predDF));
@@ -55,6 +65,8 @@ void Evaluation::evaluate(const std::string& inputDir, const std::string& ground
 			classStat.l1sum += e.l1sum / (float)e.normalization;
 			classStat.l2sum += e.l2sum / (float)e.normalization;
 			classStat.normalization++;
+
+			counter++;
 		}
 		classStatsDist.push_back(std::make_pair(stat.first, classStat));
 	}
@@ -81,7 +93,6 @@ EvalStatsDist Evaluation::evaluate(const VoxelGrid& inputSDF, const DistanceFiel
 			for (unsigned int x = 0; x < gtDF.getDimX(); x++) {
 				const Voxel& v = inputSDF(x / scalefactor, y / scalefactor, z / scalefactor);
 				float gtVal = gtDF(x, y, z);
-				if (v.sdf > -1.0f) stats.numInitialOcc++;
 				float predVal = predDF(x, y, z);
 				if ((v.weight < 1 || v.sdf < -1.0f) && (gtVal < truncation || predVal < truncation)) { //unknown, to be predicted 
 					float diff = std::abs(gtVal - predVal);
@@ -92,7 +103,6 @@ EvalStatsDist Evaluation::evaluate(const VoxelGrid& inputSDF, const DistanceFiel
 			} //x
 		} //y
 	} //z
-	stats.numGtOcc = (unsigned int)gtDF.getNumElements();
 	return stats;
 }
 
