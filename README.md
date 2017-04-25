@@ -15,7 +15,7 @@ Train/test data is available for download on our [project website](http://graphi
 
 ## Code
 ### Installation:  
-Training tasks use [Torch7](http://torch.ch/docs/getting-started.html), with torch packages `cudnn`, `cunn`, `hdf5`, `xlua`.
+Training tasks use [Torch7](http://torch.ch/docs/getting-started.html), with torch packages `cudnn`, `cunn`, `torch-hdf5`, `xlua`.
 
 The shape synthesis code was developed under VS2013, and uses `flann` (included in [external](external)). 
 
