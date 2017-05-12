@@ -19,13 +19,17 @@ function jitterTensor(tensor, jitter, truncation, jitterMultFactor)
     return dst
 end
 
+function trim(s)
+    return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 -- get all lines from a file
 function getLinesFromFile(file)
   --print('[getlinesfromfile] ' .. file)
   assert(paths.filep(file))
   lines = {}
   for line in io.lines(file) do 
-    lines[#lines + 1] = line
+    lines[#lines + 1] = trim(line)
   end
   return lines
 end
