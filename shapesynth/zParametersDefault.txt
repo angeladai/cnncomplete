@@ -1,0 +1,33 @@
+s_numLevels = 3; 
+s_numItersPerLevel = 7;//5;
+
+s_truncationDistance = 0.12f;
+
+s_searchMaxK = 5;
+s_searchEps = 0.0001f;
+s_radiusFine = 2;			//5x5x5
+s_radiusCoarse = 1;			//3x3x3
+s_useCoherence = false; //true;
+s_coherenceKappa = 2.0f;
+
+s_featureDim = 125;//-1; // reduce feature dimensions by pca, (unsigned int)-1 for no pca
+
+
+s_outputDir = "output/";
+s_baseDataDir = "../data/"; //prefix for neighborfiles
+s_verbose = false; //true to enable simple voxelization visualization of synthesis
+s_startLevel = 0;
+
+s_inputSdfFile = "test-images_dim32_sdf/03001627/6190eb8be0f39ad782e3bf439621ac4d__0__.sdf";
+s_completedDfFile = "output-test-images-32/03001627/6190eb8be0f39ad782e3bf439621ac4d__0__.df";
+
+//code assumes input as [class id]/[model id]/model.obj
+s_neighborFiles[0] = "03001627/3421ad5a45b85f7a4b3c42e318f3affc/model.obj";
+s_neighborFiles[1] = "03001627/f46ccdbf92b738e64b3c42e318f3affc/model.obj";
+s_neighborFiles[2] = "04256520/b233a919f5d2f6ac2ad490d4d7fae486/model.obj";
+
+//for angie
+s_baseDataDir = "//falas/datasets/shapenet_core/"; 
+s_inputSdfFile = "U:/adai/data/shapenet_core/test-imhoriz_dim32_sdf/03001627/6190eb8be0f39ad782e3bf439621ac4d__0__.sdf";
+s_completedDfFile = "E:/Work/CNNComplete/parser/output-test-images-32/03001627/6190eb8be0f39ad782e3bf439621ac4d__0__.df";
+s_verbose = true;
