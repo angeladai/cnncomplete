@@ -32,3 +32,6 @@ The shape synthesis code was developed under VS2013, and uses `flann` (included 
   year = {2017}
 }
 ```
+
+## Contact:
+If you have any questions, please email Angela Dai at adai@cs.stanford.edu.
