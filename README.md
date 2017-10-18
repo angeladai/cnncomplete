@@ -25,7 +25,7 @@ The shape synthesis code was developed under VS2013, and uses `flann` (included 
 
 ## Citation:  
 ```
-@article{dai2017complete,
+@inproceedings{dai2017complete,
   title={Shape Completion using 3D-Encoder-Predictor CNNs and Shape Synthesis},
   author={Dai, Angela and Qi, Charles Ruizhongtai and Nie{\ss}ner, Matthias},
   booktitle = {Proc. Computer Vision and Pattern Recognition (CVPR), IEEE},
