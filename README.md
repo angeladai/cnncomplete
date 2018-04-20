@@ -33,5 +33,8 @@ The shape synthesis code was developed under VS2013, and uses `flann` (included 
 }
 ```
 
+## License
+This code is released under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (please refer to [LICENSE.txt](LICENSE.txt) for details).
+
 ## Contact:
 If you have any questions, please email Angela Dai at adai@cs.stanford.edu.
