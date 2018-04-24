@@ -67,3 +67,27 @@ function readFilesAndLabels( filename )
     end
     return filenames, labels
 end
+
+
+function splitstr(str, sep)
+    local sep, fields = sep or ":", {}
+    local pattern = string.format("([^%s]+)", sep)
+    str:gsub(pattern, function(c) fields[#fields+1] = c end)
+    return fields
+end
+
+function removeExtension(str)
+    return splitstr(str, '.')[1]
+end
+
+function map(tbl, fn)
+    local ret = {}
+    for k,v in pairs(tbl) do
+        ret[k] = fn(v, k)
+    end
+    return ret
+end
+
+function isempty(s)
+    return s == nil or s == ''
+end
