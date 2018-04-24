@@ -16,6 +16,7 @@ Train/test data is available for download on our [project website](http://graphi
 ## Code
 ### Installation:  
 Training tasks use [Torch7](http://torch.ch/docs/getting-started.html), with torch packages `cudnn`, `cunn`, `torch-hdf5`, `xlua`.
+
 Matlab visualization of the isosurface in testing uses the torch package `matio`.
 
 The shape synthesis code was developed under VS2013, and uses `flann` (included in [external](external)). 
@@ -25,8 +26,8 @@ The shape synthesis code was developed under VS2013, and uses `flann` (included 
 * For more options, see help: `th train_class.lua -h'` or `th train.lua -h'`
 * Trained models: [trained_models.zip](https://dovahkiin.stanford.edu/cnncomplete-public/trained_models.zip) (700mb)
 ### Testing:
-* `th test.lua --model_path [path to model] --test_file sampledata/scan.h5 --output_path [path to output] --classifier_path [path to classifier model, only specify if using epn-class or epn-unet-class models]
-* For more options, see help: `th test.lua -h'`
+* `th test.lua --model_path [path to model] --test_file sampledata/scan.h5 --output_path [path to output] --classifier_path [path to classifier model, only specify if using epn-class or epn-unet-class models]`
+* For more options, see help: `th test.lua -h`
 
 ## Citation:  
 ```
