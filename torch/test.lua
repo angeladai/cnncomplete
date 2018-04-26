@@ -77,6 +77,7 @@ assert(paths.filep(opt.model_path))
 print('loading trained network from file: ' .. opt.model_path)
 model = torch.load(opt.model_path)
 cudnn.convert(model, cudnn)
+model:evaluate()
 --print(model)
 local use_class = false
 if not isempty(opt.classifier_path) then
